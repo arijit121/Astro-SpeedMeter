@@ -1,0 +1,47 @@
+
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import Navbar from '../components/Navbar.astro';
+---
+
+<MainLayout title="Test Results - Speed Meter">
+  <Navbar />
+  
+  <main class="flex-grow container mx-auto px-4 pt-32 pb-12">
+    <div class="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-8 mb-8">
+        <h2 class="text-3xl font-display font-bold mb-6 flex items-center gap-3">
+            <span class="w-2 h-8 bg-[var(--color-primary)] rounded-full"></span>
+            LATEST RESULTS
+        </h2>
+        
+        {/* Placeholder for dynamic results - In a real app complexity, this would use a Store or LocalStorage hydration */}
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center py-10">
+            <div>
+                <div class="text-gray-400 uppercase tracking-widest text-sm mb-2">Download</div>
+                <div class="text-5xl font-bold text-[var(--color-primary)]">-- <span class="text-lg text-gray-500">Mbps</span></div>
+            </div>
+             <div>
+                <div class="text-gray-400 uppercase tracking-widest text-sm mb-2">Upload</div>
+                <div class="text-5xl font-bold text-[var(--color-secondary)]">-- <span class="text-lg text-gray-500">Mbps</span></div>
+            </div>
+             <div>
+                <div class="text-gray-400 uppercase tracking-widest text-sm mb-2">Ping</div>
+                <div class="text-5xl font-bold text-[var(--color-accent1)]">-- <span class="text-lg text-gray-500">ms</span></div>
+            </div>
+        </div>
+
+        <div class="border-t border-white/10 pt-6 mt-6">
+            <h3 class="text-xl font-bold mb-4">Analysis</h3>
+            <p class="text-gray-400 leading-relaxed">
+                Your connection quality cannot be determined yet. Run a test to see detailed analysis.
+            </p>
+        </div>
+    </div>
+    
+    <div class="text-center">
+        <a href="/" class="inline-block bg-white/10 hover:bg-white/20 text-white font-bold py-3 px-8 rounded-full transition-colors border border-white/20">
+            Run New Test
+        </a>
+    </div>
+  </main>
+</MainLayout>

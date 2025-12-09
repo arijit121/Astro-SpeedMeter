@@ -1,0 +1,38 @@
+
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import Navbar from '../components/Navbar.astro';
+import SpeedMeter from '../components/SpeedMeter';
+---
+
+<MainLayout title="Speed Meter - Futuristic Internet Speed Test">
+  <Navbar />
+  
+  <main class="flex-grow flex flex-col items-center justify-center relative overflow-hidden">
+    {/* Background Effects */}
+    <div class="absolute inset-0 z-0">
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[var(--color-primary)] rounded-full blur-[150px] opacity-10 animate-pulse"></div>
+        <div class="absolute bottom-0 w-full h-1/2 bg-gradient-to-t from-[var(--color-dark)] to-transparent"></div>
+        
+        {/* Grid Floor Effect - Simplified with CSS gradients */}
+        <div class="absolute bottom-0 w-full h-[600px] opacity-20" style="background-image: linear-gradient(0deg, transparent 24%, rgba(0, 255, 225, .3) 25%, rgba(0, 255, 225, .3) 26%, transparent 27%, transparent 74%, rgba(0, 255, 225, .3) 75%, rgba(0, 255, 225, .3) 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, rgba(0, 255, 225, .3) 25%, rgba(0, 255, 225, .3) 26%, transparent 27%, transparent 74%, rgba(0, 255, 225, .3) 75%, rgba(0, 255, 225, .3) 76%, transparent 77%, transparent); background-size: 50px 50px; transform: perspective(500px) rotateX(60deg) translateY(200px);"></div>
+    </div>
+
+    <div class="z-10 text-center mb-8 mt-8 px-4">
+        <h1 class="text-4xl md:text-6xl font-bold mb-4 drop-shadow-[0_0_15px_rgba(0,255,225,0.5)]">
+            MEASURE YOUR <span class="text-[var(--color-primary)] text-neon">SPEED</span>
+        </h1>
+        <p class="text-gray-400 text-lg max-w-2xl mx-auto">
+            Experience the future of connectivity. Accurate, fast, and secure speed testing powered by edge computing.
+        </p>
+    </div>
+
+    <div class="z-10 w-full">
+        <SpeedMeter client:load />
+    </div>
+  </main>
+  
+  <footer class="py-6 text-center text-xs text-gray-600 z-10">
+      &copy; 2025 SpeedMeter. All rights reserved.
+  </footer>
+</MainLayout>

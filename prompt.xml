@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Prompt version="1.0" created="2025-12-09">
+    <Project>
+        <Name>SpeedMeter</Name>
+        <Purpose>Create a visually futuristic, highly accurate Internet Speed Meter website built
+            with Astro framework</Purpose>
+        <PrimaryFramework>Astro</PrimaryFramework>
+        <OptionalFrontendLibs>
+            <Lib>React (islands)</Lib>
+            <Lib>Svelte (islands)</Lib>
+            <Lib>Three.js (for 3D / particle / shader effects)</Lib>
+            <Lib>WebGL / GLSL (custom shaders)</Lib>
+            <Lib>Tailwind CSS (utility-first styling)</Lib>
+        </OptionalFrontendLibs>
+        <Tone>futuristic, confident, minimal, neon-tech</Tone>
+        <TargetAudience>Tech-savvy users, network admins, testers, enthusiasts</TargetAudience>
+    </Project>
+
+    <Design>
+        <Theme>Futuristic Vibrant</Theme>
+        <ColorPalette>
+            <!-- Neon / Vibrant colors, high contrast for glow effects -->
+            <PrimaryHex>#00FFF7</PrimaryHex> <!-- neon-cyan -->
+            <AccentHex1>#7C3AED</AccentHex1> <!-- electric purple -->
+            <AccentHex2>#FF0066</AccentHex2> <!-- hot magenta -->
+            <AccentHex3>#00FF66</AccentHex3> <!-- neon-lime -->
+            <BackgroundGradient>
+        <![CDATA[
+        linear-gradient(135deg, rgba(2,0,36,1) 0%, rgba(10,10,30,1) 40%, rgba(8,0,50,1) 100%)
+        ]]>
+      </BackgroundGradient>
+            <GlassColor rgba="rgba(255,255,255,0.04)" />
+            <Surface>#0b1020</Surface>
+            <TextPrimary>#E6F7FF</TextPrimary>
+            <TextSecondary>#9AA9B2</TextSecondary>
+        </ColorPalette>
+
+        <Typography>
+            <PrimaryFont>Inter var, or Satoshi</PrimaryFont>
+            <DisplayFont>Orbitron (for headings)</DisplayFont>
+            <Sizes>
+                <H1>clamp(2rem, 4vw, 3.5rem)</H1>
+                <H2>clamp(1.5rem, 3.2vw, 2.4rem)</H2>
+                <Body>1rem</Body>
+            </Sizes>
+            <LetterSpacing>tight for heading; normal for body</LetterSpacing>
+        </Typography>
+
+        <VisualGuidelines>
+            <NeonGlow>Use 2-3 layered text-shadows for glow; prefer mix-blend-mode: screen on
+                lighter surfaces</NeonGlow>
+            <Gradients>Smooth multi-stop gradients for cards and separators</Gradients>
+            <Glassmorphism>Blurred frosted panels with borders and soft shadows</Glassmorphism>
+            <MicroInteractions>
+                <Hover>subtle scale, glow intensify</Hover>
+                <Tap>ripple-like inner glow</Tap>
+            </MicroInteractions>
+        </VisualGuidelines>
+
+        <AccessibilityGuidelines>
+            <Contrast>All primary text must meet WCAG AA; bright neon accents used only for
+                decorative or hover states when necessary</Contrast>
+            <FocusStates>always visible and high contrast</FocusStates>
+            <ReducedMotion>respect prefers-reduced-motion</ReducedMotion>
+            <KeyboardSupport>all interactive components must be keyboard accessible</KeyboardSupport>
+        </AccessibilityGuidelines>
+    </Design>
+
+    <UX>
+        <PrimaryScreen>Single-page app feel with islands: main speed measurement card centered,
+            supporting details below</PrimaryScreen>
+        <UserFlow>
+            <Step1>Open site - show animated hero with small "Start Test" CTA</Step1>
+            <Step2>On start: request no special permission (no geolocation). Begin measurement using
+                parallel HTTP downloads/uploads and WebRTC if available</Step2>
+            <Step3>Show live gauges: download Mbps, upload Mbps, ping ms, jitter ms</Step3>
+            <Step4>Show detailed breakdown, historic chart, and share / compare features</Step4>
+        </UserFlow>
+
+        <Components>
+            <Header>site logo (neon), Toggle theme (dark/ultraviolet), Settings icon</Header>
+            <SpeedCard>
+                <Layout>card with large numeric readout, radial gauge, progress neon ring, small
+                    icons for ping/upload</Layout>
+                <CTA>Start / Stop / Re-test</CTA>
+                <LiveWaveform>animated waveform for transfer activity (canvas / WebGL)</LiveWaveform>
+            </SpeedCard>
+            <DetailedMetrics>table of tests (per-connection speeds, packet loss, transfer sizes)</DetailedMetrics>
+            <Chart>time-series chart of throughput (use lightweight chart lib or custom canvas)</Chart>
+            <Footer>privacy, methodology, host locations, deploy timestamp</Footer>
+        </Components>
+
+        <Settings>
+            <Advanced>
+                <ParallelConnections default="6">Adjust number of parallel connections</ParallelConnections>
+                <TestDuration defaultSeconds="10">Duration per run</TestDuration>
+                <UploadDownloadFileSizes default="2-10MB">Configurable test file sizes</UploadDownloadFileSizes>
+                <UseWebRTC default="true">toggle to use WebRTC-based tests for better NAT traversal</UseWebRTC>
+            </Advanced>
+        </Settings>
+    </UX>
+
+    <MeasurementAlgorithm>
+        <Goal>Reliable, repeatable, and unbiased measurement of bandwidth (download/upload), latency
+            (ping), and jitter</Goal>
+
+        <HighLevelApproach>
+      <![CDATA[
+      1. Latency: use repeated small fetch requests (e.g., 64–128 bytes) to server; compute median round-trip time and jitter (std dev).
+      2. Download: open N parallel HTTP GET requests to server-endpoint serving random binary blobs; measure bytes/time for each; sum throughput.
+      3. Upload: open N parallel HTTP POST requests uploading binary blobs; measure bytes/time for each.
+      4. Use multiple chunk sizes and discard initial warm-up bytes to avoid TCP slow-start skew.
+      5. Repeat tests for short intervals (e.g., 10s) and compute median to increase accuracy.
+      6. If WebRTC datapaths available, run a parallel WebRTC test; reconcile with HTTP results and prefer server-based HTTP for consistency.
+      ]]>
+    </HighLevelApproach>
+
+        <PseudoCode>
+      <![CDATA[
+      // runDownloadTest(serverUrl, parallel=6, duration=10s)
+      startTime = now()
+      connections = []
+      for i in 1..parallel:
+        conn = fetchStream(serverUrl + '?size=chunk&random=' + uuid())
+        connections.push(conn)
+      while now() - startTime < duration:
+        for conn in connections:
+          chunk = await conn.read()
+          bytesTransferred += chunk.length
+        emitLiveThroughput(bytesTransferred / (now() - startTime))
+      // finalThroughput = bytesTransferred / elapsedSeconds -> convert to Mbps
+      ]]>
+    </PseudoCode>
+
+        <ServerRequirements>
+            <CORS>Allow CORS for test endpoints (Access-Control-Allow-Origin: *) with restrictive
+                security on production</CORS>
+            <Endpoints>
+                <DownloadEndpoint>/api/test/download?size={bytes}&id={runId}</DownloadEndpoint>
+                <UploadEndpoint>/api/test/upload</UploadEndpoint>
+                <PingEndpoint>/api/test/ping</PingEndpoint>
+            </Endpoints>
+            <Performance>Endpoints should be served from multiple CDN-backed regions to reduce test
+                server bottlenecks</Performance>
+            <Scaling>Autoscale endpoints for concurrent users</Scaling>
+        </ServerRequirements>
+
+        <AccuracyConsiderations>
+            <Note>Use multiple runs and median aggregation; show confidence interval and server
+                location used</Note>
+            <Avoid>Not using a single huge file (may bottleneck single connection)</Avoid>
+        </AccuracyConsiderations>
+    </MeasurementAlgorithm>
+
+    <AstroImplementation>
+        <ProjectStructure>
+      <![CDATA[
+      /src
+        /components
+          SpeedCard.jsx
+          GaugeCanvas.jsx
+          WaveformCanvas.jsx
+          SettingsPanel.jsx
+          ChartIsland.jsx
+        /layouts
+          BaseLayout.astro
+        /pages
+          index.astro
+        /styles
+          variables.css
+          neon.css
+        /scripts
+          measurement.js
+        /server
+          api_test.js   // server functions for download/upload/ping
+      astro.config.mjs
+      package.json
+      ]]>
+    </ProjectStructure>
+
+        <AstroIslands>
+            <Strategy>Hydrate only interactive islands: measurement controls, gauges, and charts.
+                Keep hero and static info as static HTML for perf.</Strategy>
+            <Hydration>use client:load or client:idle only where needed</Hydration>
+        </AstroIslands>
+
+        <CodeSnippets>
+            <StartButtonHandler>
+        <![CDATA[
+        // in SpeedCard.jsx
+        import { startTest } from '../scripts/measurement.js'
+        function onStart() {
+          startTest({parallel:6, duration:10, server:'/api/test'})
+            .on('progress', updateUI)
+            .then(result => showResult(result))
+        }
+        ]]>
+      </StartButtonHandler>
+
+            <SimpleDownloadEndpoint>
+        <![CDATA[
+        // /src/server/api_test.js (Node)
+        import { Router } from 'express'
+        const router = Router()
+        router.get('/download', (req, res) => {
+          const size = parseInt(req.query.size) || 1024 * 1024
+          res.setHeader('Content-Type', 'application/octet-stream')
+          // stream random bytes or pre-generated buffer of given size
+          const buffer = generateBuffer(size)
+          res.send(buffer)
+        })
+        export default router
+        ]]>
+      </SimpleDownloadEndpoint>
+        </CodeSnippets>
+    </AstroImplementation>
+
+    <FrontendTechnicalDetails>
+        <CanvasEffects>
+      <![CDATA[
+      - Use requestAnimationFrame for animations.
+      - Offload heavy drawing into WebGL / Three.js for waveform and particles.
+      - Provide a fallback static SVG if WebGL is unavailable.
+      ]]>
+    </CanvasEffects>
+
+        <Animations>
+            <Prefer>GPU-accelerated transforms (translateZ, opacity)</Prefer>
+            <Avoid>layout-triggering properties (width/height) for animations</Avoid>
+        </Animations>
+
+        <CSSExamples>
+      <![CDATA[
+      /* neon.css */
+      :root {
+        --bg: #070820;
+        --neon-cyan: #00FFF7;
+        --accent-purple: #7C3AED;
+      }
+      body {
+        background: radial-gradient(circle at 10% 10%, rgba(7,8,32,1) 0%, rgba(5,7,22,1) 60%);
+        color: var(--text-primary);
+        font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+      }
+      .speed-card {
+        background: rgba(255,255,255,0.03);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255,255,255,0.06);
+        box-shadow: 0 8px 40px rgba(2,6,23,0.6);
+        border-radius: 16px;
+        padding: 24px;
+      }
+      .neon {
+        text-shadow: 0 0 6px rgba(0,255,247,0.08), 0 0 18px rgba(124,58,237,0.06);
+      }
+      ]]>
+    </CSSExamples>
+    </FrontendTechnicalDetails>
+
+    <UXDetails>
+        <LiveFeedback>Show transient toast "warming up network..." while initial handshake and DNS
+            resolved</LiveFeedback>
+        <ErrorStates>
+            <NetworkError>
+                <Message>Unable to reach test server — try switching region or disabling VPN</Message>
+            </NetworkError>
+            <PermissionError>
+                <Message>No special permission required. Show explanation if a WebRTC test needs
+                    microphone/camera (rare) — otherwise avoid asking for private scopes.</Message>
+            </PermissionError>
+        </ErrorStates>
+        <ResultScreen>
+            <Elements>
+                <PrimaryMetric>download Mbps</PrimaryMetric>
+                <SecondaryMetric>upload Mbps, ping ms, jitter ms</SecondaryMetric>
+                <VisualAid>radial gauge + waveform + mini bar of parallel connection speeds</VisualAid>
+                <Share>copy link with encoded results, export CSV, share image</Share>
+            </Elements>
+        </ResultScreen>
+    </UXDetails>
+
+    <AnalyticsPrivacy>
+        <PrivacyFirst>Do not collect PII by default. Show clear privacy banner and opt-in for
+            telemetry.</PrivacyFirst>
+        <Telemetry>Aggregate only: region-level server used, latency, anonymized test id</Telemetry>
+        <GDPR>Provide data deletion link and retention policy</GDPR>
+        <OSSComponents>List used libs and licenses</OSSComponents>
+    </AnalyticsPrivacy>
+
+    <TestingAndQuality>
+        <UnitTests>Test measurement logic (mock fetch responses), UI behaviors, accessibility</UnitTests>
+        <E2E>Use Playwright to run end-to-end tests for measurement flows (mock servers to control
+            latency)</E2E>
+        <PerformanceBudget>
+            <TTFB targetMs="400" />
+            <LCP targetSeconds="1.5" />
+            <TotalJS targetKB="150" />
+        </PerformanceBudget>
+        <LighthouseTargets>90+ accessibility, 90+ performance, 100 SEO baseline for static content</LighthouseTargets>
+    </TestingAndQuality>
+
+    <Deployment>
+        <Hosting>Vercel / Netlify recommended for Astro; if server endpoints needed, host with
+            serverless functions or managed Node (Fly.io, Heroku, DigitalOcean)</Hosting>
+        <CDN>Use multi-region CDN for test file endpoints (Cloudflare, Fastly, AWS CloudFront)</CDN>
+        <SSL>Mandatory</SSL>
+        <CI>
+            <Pipeline>install -> lint -> test -> build -> deploy</Pipeline>
+            <Secrets>store API keys and telemetry secrets securely</Secrets>
+        </CI>
+    </Deployment>
+
+    <Assets>
+        <Icons>SVG neon icons, animated SVG loader</Icons>
+        <3DModels>optional low-poly models for hero (GLTF / glb)</3DModels>
+        <Fonts>
+            <Primary>Inter (variable)</Primary>
+            <Display>Orbitron (headlines)</Display>
+        </Fonts>
+    </Assets>
+
+    <Deliverables>
+        <List>
+            <Item>Astro project scaffold with islands for interactive components</Item>
+            <Item>Speed measurement client library (measurement.js)</Item>
+            <Item>Server API endpoints for download/upload/ping</Item>
+            <Item>Responsive, accessible UI with neon-futuristic theme</Item>
+            <Item>Documentation: methodology, privacy, deployment steps</Item>
+            <Item>Test suite and CI configuration</Item>
+        </List>
+    </Deliverables>
+
+    <EdgeCasesAndNotes>
+        <MobileConsiderations>Cellular networks are bursty — show shorter run durations for mobile
+            by default and allow longer runs</MobileConsiderations>
+        <VPNAndProxy>Show warning that VPNs and proxies distort results</VPNAndProxy>
+        <Metering>Warn users about mobile data consumption and provide "use small test files" option</Metering>
+        <ServerCosts>Keep test file sizes modest by default; use lightweight caching and CDN</ServerCosts>
+    </EdgeCasesAndNotes>
+
+    <PromptUsage>
+        <Instruction>
+      <![CDATA[
+      Use this XML to auto-generate an Astro project or to brief a development team. When generating code:
+      - Prioritize minimal client JS (Astro islands)
+      - Keep measurement accuracy and privacy as top priorities
+      - Implement graceful fallbacks when WebGL or WebRTC aren't available
+      - Provide a config file (config.json) to tweak default parameters (parallel connections, test duration, server regions)
+      ]]>
+    </Instruction>
+    </PromptUsage>
+
+    <ExampleShortPrompt>
+    <![CDATA[
+    "Create an Astro-based Internet Speed Meter with a neon-futuristic UI. Use Astro islands to hydrate only interactive parts (speed card, gauges, charts). Implement accurate download/upload measurement using parallel HTTP connections, provide a Node server for test endpoints, and host test files on CDN. Provide responsive, accessible UI with vivid neon colors and glassmorphism."
+    ]]>
+  </ExampleShortPrompt>
+
+    <Finish>
+        <AuthoringNotes>Ultra-detailed. If you want, I can convert this to a ready-to-run Astro repo
+            scaffold (package.json, sample pages, measurement module) — just say "generate repo".</AuthoringNotes>
+    </Finish>
+</Prompt>

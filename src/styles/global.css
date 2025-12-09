@@ -1,0 +1,42 @@
+
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #00FFE1;
+  --color-secondary: #7B61FF;
+  --color-accent1: #FF2D95;
+  --color-accent2: #00FFA3;
+  --color-dark: #05031A;
+  
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-display: 'Orbitron', 'Exo 2', sans-serif;
+}
+
+:root {
+  --bg-gradient: linear-gradient(180deg, #05031A 0%, #0B0A1F 100%);
+}
+
+@layer base {
+  body {
+    background: var(--bg-gradient);
+    color: white;
+    font-family: var(--font-sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    letter-spacing: 0.05em;
+  }
+}
+
+/* Animations */
+@keyframes neon-pulse {
+  0%, 100% { text-shadow: 0 0 10px var(--color-primary), 0 0 20px var(--color-primary); }
+  50% { text-shadow: 0 0 5px var(--color-primary), 0 0 10px var(--color-primary); }
+}
+
+.text-neon {
+  animation: neon-pulse 2s infinite ease-in-out;
+}

@@ -1,0 +1,27 @@
+
+---
+const pathname = new URL(Astro.request.url).pathname;
+const links = [
+ // { href: '/', label: 'Speed Test' },
+ // { href: '/results', label: 'History' },
+];
+---
+<nav class="flex items-center justify-between px-6 py-4 fixed w-full top-0 z-50 bg-black/20 backdrop-blur-md border-b border-white/5">
+    <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-[var(--color-primary)] to-[var(--color-secondary)] shadow-[0_0_15px_var(--color-primary)]"></div>
+        <span class="font-display font-bold text-xl tracking-wider">SPEED<span class="text-[var(--color-primary)]">Meter</span></span>
+    </div>
+
+    <div class="hidden md:flex items-center gap-8">
+        {links.map(link => (
+            <a href={link.href} class={`text-sm font-medium uppercase tracking-widest hover:text-[var(--color-primary)] transition-colors ${pathname === link.href ? 'text-[var(--color-primary)]' : 'text-gray-400'}`}>
+                {link.label}
+            </a>
+        ))}
+    </div>
+    
+    <div class="md:hidden">
+        {/* Mobile Menu Icon Placeholder */}
+        <button class="text-white">☰</button>
+    </div>
+</nav>
