@@ -112,7 +112,7 @@ export default function SpeedMeter() {
                         onClick={startTest}
                         className="bg-[var(--color-primary)] text-black font-bold font-display px-10 py-4 rounded-full text-xl hover:scale-105 transition-transform shadow-[0_0_30px_var(--color-primary)] cursor-pointer"
                     >
-                        START TEST
+                        {status === 'done' ? 'TEST AGAIN' : 'START TEST'}
                     </button>
                 ) : (
                     <button
@@ -124,11 +124,11 @@ export default function SpeedMeter() {
                 )}
             </div>
 
-            {status === 'done' && (
+            {/* {status === 'done' && (
                 <div className="mt-8 text-center text-gray-400 text-sm">
                     <a href="/results" className="underline hover:text-white">View Detailed Results &History</a>
                 </div>
-            )}
+            )} */}
         </div>
     );
 }
