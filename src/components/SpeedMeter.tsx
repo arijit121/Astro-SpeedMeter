@@ -51,9 +51,9 @@ export default function SpeedMeter() {
     const rotation = -90 + (Math.min(currentSpeed, 1000) / 1000) * 180; // Map 0-1000 Mbps to -90 to 90 deg
 
     return (
-        <div className="relative flex flex-col items-center justify-center p-8 w-full max-w-md mx-auto">
+        <div className="relative flex flex-col items-center justify-center p-2 w-full max-w-md mx-auto">
             {/* Gauge Container */}
-            <div className="relative w-64 h-64 md:w-80 md:h-80 mb-8">
+            <div className="relative w-64 h-64 md:w-80 md:h-80 mb-4">
                 {/* Outer Ring Glow */}
                 <div className="absolute inset-0 rounded-full border-4 border-[var(--color-dark)] shadow-[0_0_50px_var(--color-primary)] opacity-20"></div>
 
@@ -99,7 +99,7 @@ export default function SpeedMeter() {
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-3 gap-6 w-full mb-8">
+            <div className="grid grid-cols-3 gap-6 w-full mb-4">
                 <StatBox label="Ping" value={ping.toFixed(0)} unit="ms" active={status === 'ping'} />
                 <StatBox label="Download" value={downloadSpeed.toFixed(1)} unit="Mbps" active={status === 'download'} />
                 <StatBox label="Upload" value={uploadSpeed.toFixed(1)} unit="Mbps" active={status === 'upload'} />
